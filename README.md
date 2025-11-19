@@ -19,17 +19,17 @@ This GitHub Action is useful when you maintain multiple mirrors, split repos, or
 
 ## 🛠 Inputs
 
-| Input                 | Required | Default               | Description                                                                |
-| --------------------- | -------- | --------------------- | -------------------------------------------------------------------------- |
-| `source_repo`         | ✔️ Yes   | —                     | The `owner/repo` to copy the release *from*.                               |
-| `destination_repo`    | ❌ No    | Current repo          | The `owner/repo` to create/update the release *in*.                        |
-| `github_token`        | ✔️ Yes   | `${{ github.token }}` | A token with access to both source & destination repos.                    |
-| `tag`                 | ❌ No    | Triggering tag        | The release tag to copy.                                                   |
-| `override_body`       | ❌ No    | —                     | Overrides the release body in the destination repo.                        |
-| `override_name`       | ❌ No    | —                     | Overrides the release name/title in the destination repo.                  |
-| `override_draft`      | ❌ No    | —                     | Explicit `"true"`/`"false"` to set draft status. Otherwise uses source.    |
-| `override_prerelease` | ❌ No    | —                     | Explicit `"true"`/`"false"` to set prerelease flag. Otherwise uses source. |
-| `skip_assets`         | ❌ No    | `"false"`             | If `"true"`, does not copy assets.                                         |
+| Input                 | Required | Default                | Description                                                                |
+| --------------------- | -------- | ---------------------- | -------------------------------------------------------------------------- |
+| `source_repo`         | ✔️ Yes   | —                      | The `owner/repo` to copy the release *from*.                               |
+| `destination_repo`    | ❌ No    | Current repo           | The `owner/repo` to create/update the release *in*.                        |
+| `github_token`        | ✔️ Yes   | `secrets.GITHUB_TOKEN` | A token with access to both source & destination repos.                    |
+| `tag`                 | ❌ No    | Triggering tag         | The release tag to copy.                                                   |
+| `override_body`       | ❌ No    | —                      | Overrides the release body in the destination repo.                        |
+| `override_name`       | ❌ No    | —                      | Overrides the release name/title in the destination repo.                  |
+| `override_draft`      | ❌ No    | —                      | Explicit `true`/`false` to set draft status. Otherwise uses source.        |
+| `override_prerelease` | ❌ No    | —                      | Explicit `true`/`false` to set prerelease flag. Otherwise uses source.     |
+| `skip_assets`         | ❌ No    | `false`                | If `true`, does not copy assets.                                           |
 
 ---
 
@@ -54,7 +54,6 @@ jobs:
         with:
           source_repo: my-org/source-repo
           tag: ${{ github.event.inputs.tag }}
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 ```
 
 ---
@@ -67,6 +66,7 @@ jobs:
   with:
     source_repo: user/project-A
     destination_repo: user/project-B
+    github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
     override_name: "Rebranded Release Name"
     override_body: |
       This release is synced but modified.
