@@ -12,7 +12,19 @@ RELEASE_JSON=$(wget -qO- \
   --header="Authorization: Bearer $TOKEN" \
   "https://api.github.com/repos/$REPO/releases/tags/$TAG")
 
-JAR_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name=="app.jar") | .url')
+JAR_URL=$(
+  printf "%s\n" "$RELEASE_JSON" |
+  awk '
+    /"name": "app.jar"/ { found=1 }
+    found && /"url":/ {
+      match($0, /"url": *"([^"]+)"/, m)
+      if (m[1] != "") {
+        print m[1]
+        exit
+      }
+    }
+  '
+)
 
 if [ -z "$JAR_URL" ] || [ "$JAR_URL" = "null" ]; then
   echo "::error::app.jar not found in release $TAG of $REPO"
