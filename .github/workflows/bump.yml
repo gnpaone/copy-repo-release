@@ -1,0 +1,121 @@
+name: Bump Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Select version bump type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Find latest tag of target repo
+        id: tag
+        uses: oprypin/find-latest-tag@v1
+        with:
+          repository: gnpaone/copy-repo-release
+          releases-only: true
+
+      - name: Strip 'v' from tag
+        id: version
+        run: |
+          RAW_TAG="${{ steps.tag.outputs.tag }}"
+          CLEAN_TAG="${RAW_TAG#v}"      # remove leading v
+          echo "clean_version=$CLEAN_TAG" >> $GITHUB_OUTPUT
+
+      - name: Update version in README.md
+        uses: gnpaone/dynamic-update-readme@v1.0.2
+        with:
+          readme_path: README.md
+          marker_text: "COPY_RELEASE_WORKFLOW"
+          markdown_text: |
+            ```yaml
+            name: Copy Release
+
+            on:
+              workflow_dispatch:
+                inputs:
+                  tag:
+                    description: "Release tag to copy"
+                    required: true
+
+            jobs:
+              copy-release:
+                runs-on: ubuntu-latest
+                steps:
+                  - name: Copy GitHub Release
+                    uses: gnpaone/copy-repo-release@v${{ steps.version.outputs.clean_version }}
+                    with:
+                      source_repo: my-org/source-repo
+                      tag: ${{ github.event.inputs.tag }}
+            ```
+            
+            ---
+            
+            ## 🔧 Example: Overriding Fields
+            
+            ```yaml
+            - name: Copy with Overrides
+              uses: gnpaone/copy-repo-release@v${{ steps.version.outputs.clean_version }}
+              with:
+                source_repo: user/project-A
+                destination_repo: user/project-B
+                github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+                override_name: "Rebranded Release Name"
+                override_body: |
+                  This release is synced but modified.
+                  It has a multi-line description.
+                override_draft: "true"
+                skip_assets: "true"
+            ```
+          commit_message: "Update workflows version to v${{ steps.version.outputs.clean_version }}"
+          confirm_and_push: false
+
+      - name: Update version in build.sbt
+        run: |
+          VERSION="${{ steps.version.outputs.clean_version }}"
+          echo "Updating build.sbt version → $VERSION"
+
+          sed -i "s/^version := \".*\"/version := \"${VERSION}\"/" build.sbt
+
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Bump version to v${{ steps.version.outputs.clean_version }}"
+          committer: gnpaone <78990165+gnpaone@users.noreply.github.com>
+          author: gnpaone <78990165+gnpaone@users.noreply.github.com>
+          branch: bump-version
+          base: master
+          delete-branch: true
+          title: Bump version
+
+      - name: Enable pull request automerge
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+
+      - name: Delete PRs head branch
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        uses: dawidd6/action-delete-branch@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          numbers: ${{ steps.cpr.outputs.pull-request-number }}
