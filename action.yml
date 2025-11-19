@@ -1,0 +1,37 @@
+name: "Copy Release"
+description: "Copy a release between repos"
+author: "gnpaone"
+
+inputs:
+  source_repo:
+    required: true
+    description: 'The source org/repo for the release. The release will be copied from this repository.'
+  destination_repo:
+    required: true
+    description: 'The destination org/repo for the release. The release will be created or updated in this repository.'
+  github_token:
+    required: false
+    description: 'A token that has access to both the source and destination repositories. If not provided, the action will fall back to the default GITHUB_TOKEN.'
+  tag:
+    required: false
+    description: 'The release tag to copy. If not provided, will use the tag that triggered the action.'
+  override_body:
+    required: false
+    description: 'If provided, this text will be used as the release body in the destination repository instead of source release body.'
+  override_name:
+    required: false
+    description: 'If provided, this value will be used as the release name/title instead of the source release name.'
+  override_draft:
+    required: false
+    description: 'If provided ("true" or "false"), explicitly sets whether the destination release is a draft, else the draft status of the source release is preserved.'
+  override_prerelease:
+    required: false
+    description: 'If provided ("true" or "false"), explicitly sets whether the destination release is marked as a prerelease, else the prerelease status of the source release is preserved.'
+  skip_assets:
+    required: false
+    default: "false"
+    description: 'If set to "true", release assets from the source release will not be copied. Defaults to "false".'
+
+runs:
+  using: "docker"
+  image: "Dockerfile"

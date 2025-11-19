@@ -11,8 +11,23 @@ object Main:
   def main(args: Array[String]): Unit =
     val sourceRepo = in("source_repo")
     val destRepo   = in("destination_repo")
-    val token      = in("github_token")
-    val tag        = in("tag")
+
+    val token =
+      if in("github_token").nonEmpty then in("github_token")
+      else sys.env.getOrElse("GITHUB_TOKEN", "")
+
+    if token.isEmpty then
+      System.err.println("::error::No token provided")
+      sys.exit(1)
+
+    val tag =
+      if in("tag").nonEmpty then in("tag")
+      else sys.env.get("GITHUB_REF").map(_.split("/").last).getOrElse("")
+
+    if tag.isEmpty then
+      System.err.println("::error::No tag provided")
+      sys.exit(1)
+
 
     val overrideBody = in("override_body")
     val overrideName = in("override_name")
@@ -26,16 +41,12 @@ object Main:
     val srcRepo     = gh.getRepository(sourceRepo)
     val destination = gh.getRepository(destRepo)
 
-    //
-    // === Fetch source release ===
-    //
     val srcRelease =
       try srcRepo.getReleaseByTagName(tag)
       catch case e: Exception =>
         System.err.println(s"::error::No source release found for tag $tag")
         sys.exit(1)
 
-    // Determine final fields
     val finalBody =
       if overrideBody.nonEmpty then overrideBody
       else Option(srcRelease.getBody).getOrElse("")
@@ -52,9 +63,6 @@ object Main:
       if overridePrerelease.nonEmpty then overridePrerelease.toBoolean
       else srcRelease.isPrerelease
 
-    //
-    // === Create or update destination release ===
-    //
     val destRelease: GHRelease =
       try
         val r = destination.getReleaseByTagName(tag)
@@ -73,9 +81,6 @@ object Main:
           .prerelease(finalPrerelease)
           .create()
 
-    //
-    // === Copy assets ===
-    //
     if !skipAssets then
       srcRelease.listAssets().asScala.foreach { asset =>
         val stream = asset.openStream()
