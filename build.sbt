@@ -1,5 +1,5 @@
 name := "copy-release"
-version := "1.0"
+version := "1.0.0"
 scalaVersion := "3.7.4"
 
 libraryDependencies ++= Seq(
