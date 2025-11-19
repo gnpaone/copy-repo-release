@@ -13,15 +13,13 @@ RELEASE_JSON=$(wget -qO- \
   "https://api.github.com/repos/$REPO/releases/tags/$TAG")
 
 JAR_URL=$(
-  printf "%s\n" "$RELEASE_JSON" |
+  printf "%s\n" "$RELEASE_JSON" | grep -A 2 -B 1 '"name": "app.jar"' |
   awk '
-    /"name": "app.jar"/ { found=1 }
-    found && /"url":/ {
-      match($0, /"url": *"([^"]+)"/, m)
-      if (m[1] != "") {
-        print m[1]
-        exit
-      }
+    /"url":/ {
+      gsub(/^.*"url": *"/, "")
+      gsub(/".*$/, "")
+      print
+      exit
     }
   '
 )
