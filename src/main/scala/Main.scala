@@ -92,12 +92,14 @@ object Main:
       srcRelease.listAssets().asScala.foreach { asset =>
         val downloadUrl = asset.getBrowserDownloadUrl
         val inStream = new URL(downloadUrl).openStream()
-
-        val temp = Files.createTempFile("asset", asset.getName).toFile
-        Files.copy(inStream, temp.toPath, StandardCopyOption.REPLACE_EXISTING)
+    
+        val tempDir = Files.createTempDirectory("copy-repo-release")
+        val target = tempDir.resolve(asset.getName)
+    
+        Files.copy(inStream, target, StandardCopyOption.REPLACE_EXISTING)
         inStream.close()
-
-        destRelease.uploadAsset(temp, asset.getContentType)
+    
+        destRelease.uploadAsset(target.toFile, asset.getContentType)
       }
 
     println("Release copied successfully.")
