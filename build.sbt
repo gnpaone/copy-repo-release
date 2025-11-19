@@ -8,3 +8,4 @@ libraryDependencies ++= Seq(
 )
 
 assembly / mainClass := Some("Main")
+assemblyJarName := "app.jar"
