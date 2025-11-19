@@ -24,11 +24,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Fix git permissions
-        run: |
-          sudo chown -R $USER:$USER .
-          sudo chmod -R u+w .git
-
       - name: Find latest tag of target repo
         id: tag
         uses: oprypin/find-latest-tag@v1
@@ -118,6 +113,11 @@ jobs:
             ```
           commit_message: "Update version to v${{ steps.bump.outputs.new_version }}"
           confirm_and_push: false
+
+      - name: Fix git permissions
+        run: |
+          sudo chown -R $USER:$USER .
+          sudo chmod -R u+w .git
 
       - name: Update version in build.sbt
         run: |
