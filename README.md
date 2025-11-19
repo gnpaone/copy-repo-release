@@ -51,10 +51,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Copy GitHub Release
-        uses: gnpaone/copy-repo-release@v1.0.0
+        uses: gnpaone/copy-repo-release@v1.1.0
         with:
           source_repo: my-org/source-repo
-          tag: ${{ github.event.inputs.tag }}
+          tag: 
 ```
 
 ---
@@ -63,11 +63,11 @@ jobs:
 
 ```yaml
 - name: Copy with Overrides
-  uses: gnpaone/copy-repo-release@v1.0.0
+  uses: gnpaone/copy-repo-release@v1.1.0
   with:
     source_repo: user/project-A
     destination_repo: user/project-B
-    github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    github_token: 
     override_name: "Rebranded Release Name"
     override_body: |
       This release is synced but modified.
@@ -75,4 +75,5 @@ jobs:
     override_draft: "true"
     skip_assets: "true"
 ```
+
 <!-- COPY_RELEASE_WORKFLOW_END -->
