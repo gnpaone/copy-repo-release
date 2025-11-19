@@ -140,12 +140,12 @@ jobs:
           delete-branch: true
           title: Bump version
 
-      - name: Enable pull request automerge
+      - name: Merge pull request
         if: steps.cpr.outputs.pull-request-operation == 'created'
-        uses: peter-evans/enable-pull-request-automerge@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+        run: gh pr merge --merge -R gnpaone/copy-repo-release "$PR_NUM"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ steps.cpr.outputs.pull-request-number }}
 
       - name: Delete PRs head branch
         if: steps.cpr.outputs.pull-request-operation == 'created'
