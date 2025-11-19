@@ -7,6 +7,6 @@ RUN sbt assembly
 
 FROM eclipse-temurin:24-jre
 WORKDIR /app
-COPY --from=builder /app/target/scala-3.7.4/app.jar app.jar
+COPY --from=builder /app/target/scala-*/*-assembly*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
