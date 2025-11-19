@@ -8,8 +8,8 @@ TOKEN="$INPUT_GITHUB_TOKEN"
 echo "Action repo: $REPO"
 echo "Action version (tag): $TAG"
 
-RELEASE_JSON=$(curl -s \
-  -H "Authorization: Bearer $TOKEN" \
+RELEASE_JSON=$(wget -qO- \
+  --header="Authorization: Bearer $TOKEN" \
   "https://api.github.com/repos/$REPO/releases/tags/$TAG")
 
 JAR_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name=="app.jar") | .url')
@@ -20,11 +20,11 @@ if [ -z "$JAR_URL" ] || [ "$JAR_URL" = "null" ]; then
 fi
 
 echo "Downloading app.jar from $REPO@$TAG…"
-curl -L \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Accept: application/octet-stream" \
-  "$JAR_URL" \
-  -o /app/app.jar
+wget \
+  --header="Authorization: Bearer $TOKEN" \
+  --header="Accept: application/octet-stream" \
+  -O /app/app.jar \
+  "$JAR_URL"
 
 echo "Running app.jar"
 exec java -jar /app/app.jar
