@@ -1,7 +1,7 @@
 import org.kohsuke.github.*
 import scala.jdk.CollectionConverters.*
-import java.nio.file.{Files, Paths}
-import java.io.File
+import java.nio.file.{Files, Paths, StandardCopyOption}
+import java.net.URL
 
 object Main:
 
@@ -83,11 +83,14 @@ object Main:
 
     if !skipAssets then
       srcRelease.listAssets().asScala.foreach { asset =>
-        val stream = asset.openStream()
-        val temp = Files.createTempFile("asset", asset.getName).toFile
-        Files.copy(stream, temp.toPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        val downloadUrl = asset.getBrowserDownloadUrl
+        val inStream = new URL(downloadUrl).openStream()
 
-        destRelease.uploadAsset(temp, asset.getName, asset.getContentType)
+        val temp = Files.createTempFile("asset", asset.getName).toFile
+        Files.copy(inStream, temp.toPath, StandardCopyOption.REPLACE_EXISTING)
+        inStream.close()
+
+        destRelease.uploadAsset(temp, asset.getContentType)
       }
 
     println("Release copied successfully.")
