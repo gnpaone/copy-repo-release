@@ -10,7 +10,14 @@ object Main:
 
   def main(args: Array[String]): Unit =
     val sourceRepo = in("source_repo")
-    val destRepo   = in("destination_repo")
+
+    val destRepo =
+      if in("destination_repo").nonEmpty then in("destination_repo")
+      else sys.env.getOrElse("GITHUB_REPOSITORY", "").trim
+    
+    if destRepo.isEmpty then
+      System.err.println("::error::No destination repo provided")
+      sys.exit(1)
 
     val token =
       if in("github_token").nonEmpty then in("github_token")
